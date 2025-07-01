@@ -12,18 +12,18 @@ public class Session {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private int id;
-    private String createdBy;
+    private int createdBy;
     private String token;
-    private String joinedBy;
+    private int joinedBy;
     private String who_won;
-    private String question_id;
+    private int question_id;
 
 
-    public String getCreatedBy() {
+    public int getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(int createdBy) {
         this.createdBy = createdBy;
     }
 
@@ -43,11 +43,11 @@ public class Session {
         this.token = token;
     }
 
-    public String getJoinedBy() {
+    public int getJoinedBy() {
         return joinedBy;
     }
 
-    public void setJoinedBy(String joinedBy) {
+    public void setJoinedBy(int joinedBy) {
         this.joinedBy = joinedBy;
     }
 
@@ -59,11 +59,11 @@ public class Session {
         this.who_won = who_won;
     }
 
-    public String getQuestion_id() {
+    public int getQuestion_id() {
         return question_id;
     }
 
-    public void setQuestion_id(String question_id) {
+    public void setQuestion_id(int question_id) {
         this.question_id = question_id;
     }
 
