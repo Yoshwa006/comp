@@ -1,0 +1,20 @@
+package com.example.comp.dto;
+
+import com.example.comp.model.Users;
+
+public class Mapper {
+
+    public static Users DTOtoUser(AuthRequest authDTO) {
+        Users user = new Users();
+        user.setEmail(authDTO.getEmail());
+        user.setPassword(authDTO.getPassword());
+        return user;
+    }
+
+    public static AuthRequest UsertoDTO(Users user) {
+        AuthRequest authDTO = new AuthRequest();
+        authDTO.setEmail(user.getEmail());
+        authDTO.setPassword(user.getPassword());
+        return authDTO;
+    }
+}
