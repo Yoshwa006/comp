@@ -1,53 +1,68 @@
 package com.example.comp.service;
 
+import com.example.comp.dto.JudgeResponse;
+import com.example.comp.dto.SubmitAPI;
 import com.example.comp.dto.SubmitRequest;
-import com.example.comp.dto.TokenResponse;
+import com.example.comp.model.Session;
+import com.example.comp.repo.SessionRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+@Slf4j
 @Service
 public class SubmitService {
 
     private final WebClient client;
+    private final SessionRepo sessionRepo;
 
-    public SubmitService() {
+    public SubmitService(SessionRepo sessionRepo) {
         this.client = WebClient.builder()
                 .baseUrl("http://localhost:3001")
                 .build();
+        this.sessionRepo = sessionRepo;
     }
 
     public boolean submitCode(SubmitRequest request) {
-        try {
-            // Step 1: POST /run-code
-            TokenResponse tokenResponse = client.post()
-                    .uri("/run-code")
-                    .bodyValue(request)
-                    .retrieve()
-                    .bodyToMono(TokenResponse.class)
-                    .block(); // wait for response
+        SubmitAPI api = new SubmitAPI();
+        api.setLanguage_id(request.getLanguage_id());
+        api.setStdin(request.getStdin());
+        api.setSource_code(request.getSource_code());
 
-            if (tokenResponse == null || tokenResponse.getToken() == null) {
-                System.err.println("Token response is null.");
+        try {
+            JudgeResponse result = client.post()
+                    .uri("/run-code")
+                    .bodyValue(api)
+                    .retrieve()
+                    .bodyToMono(JudgeResponse.class)
+                    .block();
+
+            if (result == null) {
+                log.error("Judge0 response was null");
                 return false;
             }
 
-            String token = tokenResponse.getToken();
-            System.out.println("Token: " + token);
+            log.info("Judge0 Result: {}", result);
 
-            // Step 2: GET /token/{token}
-            String result = client.get()
-                    .uri("/token/" + token)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(); // wait for response
+            if ("Accepted".equalsIgnoreCase(result.getStatus())) {
+                Session session = sessionRepo.findByUserId((long) request.getUserId());
+                if (session == null) {
+                    log.error("No session found for user ID: {}", request.getUserId());
+                    return false;
+                }
 
-            System.out.println("Judge0 Result: " + result);
+                session.setWho_won(request.getUserId());
+                sessionRepo.save(session);
 
-            // ✅ Return true if result is "Accepted"
-            return result.contains("Accepted");
+                log.info("Winner marked: user ID {}", request.getUserId());
+                return true;
+            } else {
+                log.info("Code not accepted. Status: {}", result.getStatus());
+                return false;
+            }
 
         } catch (Exception e) {
-            System.err.println("Error during submission: " + e.getMessage());
+            log.error("Error during code submission", e);
             return false;
         }
     }

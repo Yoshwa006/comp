@@ -2,8 +2,18 @@ package com.example.comp.dto;
 
 public class SubmitRequest {
     String source_code;
-    int lang_id;
+    int language_id;
     String stdin;
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    int userId;
 
     public String getExpected_output() {
         return expected_output;
@@ -21,12 +31,12 @@ public class SubmitRequest {
         this.stdin = stdin;
     }
 
-    public int getLang_id() {
-        return lang_id;
+    public int getLanguage_id() {
+        return language_id;
     }
 
-    public void setLang_id(int lang_id) {
-        this.lang_id = lang_id;
+    public void setLanguage_id(int language_id) {
+        this.language_id = language_id;
     }
 
     public String getSource_code() {
