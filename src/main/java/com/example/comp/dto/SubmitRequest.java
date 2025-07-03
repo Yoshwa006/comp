@@ -1,19 +1,32 @@
 package com.example.comp.dto;
 
 public class SubmitRequest {
+
+
     String source_code;
     int language_id;
     String stdin;
+    String expected_output;
+    String token;   //extra for getting user details
+    String jwtToken; //extra for getting user details
 
-    public int getUserId() {
-        return userId;
+    public String getToken() {
+        return token;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    int userId;
+
+    public String getJwtToken() {
+        return jwtToken;
+    }
+
+    public void setJwtToken(String jwtToken) {
+        this.jwtToken = jwtToken;
+    }
+
 
     public String getExpected_output() {
         return expected_output;
@@ -47,5 +60,4 @@ public class SubmitRequest {
         this.source_code = source_code;
     }
 
-    String expected_output;
 }

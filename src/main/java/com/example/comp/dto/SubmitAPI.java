@@ -1,7 +1,12 @@
 package com.example.comp.dto;
 
 public class SubmitAPI {
+
+
     String source_code;
+    int language_id;
+    String stdin;
+
 
     public int getLanguage_id() {
         return language_id;
@@ -27,6 +32,5 @@ public class SubmitAPI {
         this.stdin = stdin;
     }
 
-    int language_id;
-    String stdin;
+
 }

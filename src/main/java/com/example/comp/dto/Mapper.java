@@ -17,4 +17,12 @@ public class Mapper {
         authDTO.setPassword(user.getPassword());
         return authDTO;
     }
+
+    public static SubmitAPI SubmitRequestToAPI(SubmitRequest request) {
+        SubmitAPI submitAPI = new SubmitAPI();
+        submitAPI.setSource_code(request.getSource_code());
+        submitAPI.setLanguage_id(request.getLanguage_id());
+        submitAPI.setStdin(request.getStdin());
+        return submitAPI;
+    }
 }

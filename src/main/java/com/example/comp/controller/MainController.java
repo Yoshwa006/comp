@@ -15,6 +15,8 @@ public class MainController {
 
     private final MainService mainService;
     private final SubmitService submitService;
+
+
     @Autowired
     public MainController(MainService mainService, SubmitService submitService) {
         this.mainService = mainService;
@@ -38,7 +40,7 @@ public class MainController {
         return ResponseEntity.ok(mainService.getAllQuestions());
     }
 
-    @GetMapping("/ques/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getQuestionById(@PathVariable Long id) {
         return ResponseEntity.ok(mainService.getQuestionById(id));
     }

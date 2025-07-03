@@ -1,10 +1,13 @@
 package com.example.comp.service;
 
 import com.example.comp.dto.JudgeResponse;
+import com.example.comp.dto.Mapper;
 import com.example.comp.dto.SubmitAPI;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.model.Session;
 import com.example.comp.repo.SessionRepo;
+import com.example.comp.repo.UserRepo;
+import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -13,22 +16,29 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class SubmitService {
 
+    private final JwtService jwtService;
     private final WebClient client;
     private final SessionRepo sessionRepo;
+    private final UserRepo userRepo;
 
-    public SubmitService(SessionRepo sessionRepo) {
+    public SubmitService(SessionRepo sessionRepo, JwtService jwtService , UserRepo userRepo) {
         this.client = WebClient.builder()
                 .baseUrl("http://localhost:3001")
                 .build();
         this.sessionRepo = sessionRepo;
+        this.userRepo = userRepo;
+        this.jwtService = jwtService;
     }
 
     public boolean submitCode(SubmitRequest request) {
-        SubmitAPI api = new SubmitAPI();
-        api.setLanguage_id(request.getLanguage_id());
-        api.setStdin(request.getStdin());
-        api.setSource_code(request.getSource_code());
+        SubmitAPI api = Mapper.SubmitRequestToAPI(request);
 
+        String email = jwtService.extractUsername(request.getJwtToken());
+        int userId  = userRepo.findByEmail(email).getId();
+        if(userId == 0){
+            log.error("User not found for email: {}", email);
+            return false;
+        }
         try {
             JudgeResponse result = client.post()
                     .uri("/run-code")
@@ -45,16 +55,15 @@ public class SubmitService {
             log.info("Judge0 Result: {}", result);
 
             if ("Accepted".equalsIgnoreCase(result.getStatus())) {
-                Session session = sessionRepo.findByUserId((long) request.getUserId());
+                Session session = sessionRepo.findByToken(request.getToken());
                 if (session == null) {
-                    log.error("No session found for user ID: {}", request.getUserId());
+                    log.error("Session not found for token: {}", request.getToken());
                     return false;
                 }
 
-                session.setWho_won(request.getUserId());
+                session.setWho_won(userId);
                 sessionRepo.save(session);
-
-                log.info("Winner marked: user ID {}", request.getUserId());
+                log.info("Code accepted. Output: {}", result.getStdout());
                 return true;
             } else {
                 log.info("Code not accepted. Status: {}", result.getStatus());
