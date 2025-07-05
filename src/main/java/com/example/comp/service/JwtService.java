@@ -17,7 +17,7 @@ import java.util.function.Function;
             return Jwts.builder()
                     .setSubject(email)
                     .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                    .setExpiration(new Date(System.currentTimeMillis() + 10000 * 60 * 60 * 10))
                     .signWith(key)
                     .compact();
         }
@@ -54,7 +54,7 @@ import java.util.function.Function;
 
         public static void main(String[] args) {
             JwtService service = new JwtService();
-            String tok = service.generateToken("ryoshwaa@gmail.com");
+            String tok = service.generateToken("kavin@gmail.com");
             System.out.println("Generated Token: " + tok);
             System.out.println("Extracted Username: " + service.extractUsername(tok));
             System.out.println("Is Token Expired: " + service.isTokenExpired(tok));

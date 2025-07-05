@@ -2,11 +2,9 @@ package com.example.comp.service;
 
 import com.example.comp.model.Question;
 import com.example.comp.model.Session;
-import com.example.comp.model.Users;
 import com.example.comp.repo.QuestionRepo;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.UserRepo;
-import com.sun.tools.javac.Main;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +18,14 @@ public class MainService {
     private final QuestionRepo questionRepo;
     final SessionRepo sessionRepo;
     final UserRepo userRepo;
+    private final JwtService jwtService;
 
     @Autowired
-    MainService(QuestionRepo questionRepo, SessionRepo sessionRepo, UserRepo userRepo) {
+    MainService(QuestionRepo questionRepo, SessionRepo sessionRepo, UserRepo userRepo, JwtService jwtService) {
         this.sessionRepo = sessionRepo;
         this.questionRepo = questionRepo;
         this.userRepo = userRepo;
+        this.jwtService = jwtService;
     }
 
     public List<Question> getAllQuestions() {
@@ -49,7 +49,8 @@ public class MainService {
         return questionRepo.save(question);
     }
 
-    public String generateToken(String email, int quesId) {
+    public String generateToken(String JWT, int quesId) {
+        System.out.println(JWT);
         Random random = new Random();
         StringBuilder token = new StringBuilder();
 
@@ -61,6 +62,7 @@ public class MainService {
                 token.append(ch);
             }
         }
+        String email = jwtService.extractUsername(JWT);
         Optional<Long> optionalUserId = userRepo.findIdByEmail(email);
         if (optionalUserId.isEmpty()) {
             return token.toString(); // or throw exception
@@ -77,13 +79,18 @@ public class MainService {
 
     }
 
-    public void enterToken(String email, String token) {
+    public void enterToken(String JWT, String token) {
+
+        String email = jwtService.extractUsername(JWT);
         Optional<Long> optionalUserId = userRepo.findIdByEmail(email);
         if (optionalUserId.isEmpty()) {
             throw new RuntimeException("Email not found");
         }
         int userId = Math.toIntExact(optionalUserId.get());
         Session session = sessionRepo.findByToken(token);
+        if(session.getCreatedBy() !=-1 && session.getJoinedBy() != -1) {
+            throw new RuntimeException("Session already full");
+        }
         if (session == null) {
             throw new RuntimeException("Invalid token");
         }

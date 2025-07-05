@@ -15,7 +15,7 @@ public class Session {
     private int createdBy;
     private String token;
     private int joinedBy;
-    private String who_won;
+    private int who_won;
     private int question_id;
 
 
@@ -51,11 +51,11 @@ public class Session {
         this.joinedBy = joinedBy;
     }
 
-    public String getWho_won() {
+    public int getWho_won() {
         return who_won;
     }
 
-    public void setWho_won(String who_won) {
+    public void setWho_won(int who_won) {
         this.who_won = who_won;
     }
 
