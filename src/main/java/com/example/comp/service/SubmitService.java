@@ -5,9 +5,9 @@ import com.example.comp.dto.Mapper;
 import com.example.comp.dto.SubmitAPI;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.model.Session;
+import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.UserRepo;
-import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,7 +21,7 @@ public class SubmitService {
     private final SessionRepo sessionRepo;
     private final UserRepo userRepo;
 
-    public SubmitService(SessionRepo sessionRepo, JwtService jwtService , UserRepo userRepo) {
+    public SubmitService(SessionRepo sessionRepo, JwtService jwtService, UserRepo userRepo) {
         this.client = WebClient.builder()
                 .baseUrl("http://localhost:3001")
                 .build();
@@ -31,42 +31,59 @@ public class SubmitService {
     }
 
     public boolean submitCode(SubmitRequest request) {
-        SubmitAPI api = Mapper.SubmitRequestToAPI(request);
+        String token = request.getToken();
+        String jwt = request.getJwtToken();
 
-        String email = jwtService.extractUsername(request.getJwtToken());
-        int userId  = userRepo.findByEmail(email).getId();
-        if(userId == 0){
+        Session session = sessionRepo.findByToken(token);
+        if (session == null) {
+            log.error("Session not found for token: {}", token);
+            return false;
+        }
+
+        if (session.getWho_won() != 0) {
+            log.error("Code already submitted by user with id: {}", session.getWho_won());
+            return false;
+        }
+
+        String email = jwtService.extractUsername(jwt);
+        Users user = userRepo.findByEmail(email);
+        if (user == null) {
             log.error("User not found for email: {}", email);
             return false;
         }
+
+        int userId = user.getId();
+
+        // Check if user is part of this session
+        if (userId != session.getCreatedBy() && userId != session.getJoinedBy()) {
+            log.error("User not part of session. Email: {}, userId: {}, sessionToken: {}", email, userId, token);
+            return false;
+        }
+
+        SubmitAPI codeSubmission = Mapper.SubmitRequestToAPI(request);
+
         try {
-            JudgeResponse result = client.post()
+            JudgeResponse judgeResult = client.post()
                     .uri("/run-code")
-                    .bodyValue(api)
+                    .bodyValue(codeSubmission)
                     .retrieve()
                     .bodyToMono(JudgeResponse.class)
                     .block();
 
-            if (result == null) {
+            if (judgeResult == null) {
                 log.error("Judge0 response was null");
                 return false;
             }
 
-            log.info("Judge0 Result: {}", result);
+            log.info("Judge0 Result: {}", judgeResult);
 
-            if ("Accepted".equalsIgnoreCase(result.getStatus())) {
-                Session session = sessionRepo.findByToken(request.getToken());
-                if (session == null) {
-                    log.error("Session not found for token: {}", request.getToken());
-                    return false;
-                }
-
+            if ("Accepted".equalsIgnoreCase(judgeResult.getStatus())) {
                 session.setWho_won(userId);
                 sessionRepo.save(session);
-                log.info("Code accepted. Output: {}", result.getStdout());
+                log.info("Code accepted. Output: {}", judgeResult.getStdout());
                 return true;
             } else {
-                log.info("Code not accepted. Status: {}", result.getStatus());
+                log.info("Code not accepted. Status: {}", judgeResult.getStatus());
                 return false;
             }
 

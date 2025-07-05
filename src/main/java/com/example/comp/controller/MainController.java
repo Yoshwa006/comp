@@ -1,7 +1,7 @@
 package com.example.comp.controller;
 
-import com.example.comp.dto.EmailAndToken;
-import com.example.comp.dto.EmailAnsQues;
+import com.example.comp.dto.EnterToken;
+import com.example.comp.dto.GenerateToken;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.service.MainService;
 import com.example.comp.service.SubmitService;
@@ -25,13 +25,14 @@ public class MainController {
 
 
     @PostMapping("/generate")
-    public ResponseEntity<String> generate(@RequestBody EmailAnsQues em) {
-        return ResponseEntity.ok().body(mainService.generateToken(em.getEmail(), em.getQuesId()));
+    public ResponseEntity<String> generate(@RequestBody GenerateToken generateToken) {
+        System.out.println("JWt: " + generateToken.getJwt());
+        return ResponseEntity.ok().body(mainService.generateToken(generateToken.getJwt(),generateToken.getQuestionId()));
     }
 
     @PostMapping("/enter")
-    public ResponseEntity<?> enter(@RequestBody EmailAndToken em) {
-        mainService.enterToken(em.getEmail(), em.getToken());
+    public ResponseEntity<?> enter(@RequestBody EnterToken em) {
+        mainService.enterToken(em.getJwt(), em.getToken());
         return ResponseEntity.ok().body("Done");
     }
 
