@@ -1,8 +1,8 @@
 package com.example.comp.service;
 
 
-import com.example.comp.dto.AuthRequest;
-import com.example.comp.dto.AuthResponce;
+import com.example.comp.dto.auth.AuthRequest;
+import com.example.comp.dto.auth.AuthResponce;
 import com.example.comp.dto.Mapper;
 import com.example.comp.model.Users;
 import com.example.comp.repo.UserRepo;

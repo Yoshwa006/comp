@@ -1,5 +1,6 @@
 package com.example.comp.dto;
 
+import com.example.comp.dto.auth.AuthRequest;
 import com.example.comp.model.Users;
 
 public class Mapper {

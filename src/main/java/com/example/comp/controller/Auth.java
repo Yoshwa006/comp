@@ -1,7 +1,7 @@
 package com.example.comp.controller;
 
 
-import com.example.comp.dto.AuthRequest;
+import com.example.comp.dto.auth.AuthRequest;
 import com.example.comp.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

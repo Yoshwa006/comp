@@ -76,7 +76,6 @@ public class MainService {
         sessionRepo.save(session);
         System.out.println(session);
         return token.toString();
-
     }
 
     public void enterToken(String JWT, String token) {
